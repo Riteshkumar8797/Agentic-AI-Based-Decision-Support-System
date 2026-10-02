@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <title>Soil Recommendation AI</title>
+</head>
+
+<body class="bg-light">
+
+<div class="container d-flex justify-content-center align-items-center vh-100">
+
+<div class="card shadow p-4" style="width:500px">
+
+<h2 class="text-center mb-4">Soil Recommendation</h2>
+
+<form id="soilForm">
+
+<div class="mb-3">
+<label class="form-label">Temperature (Degrees <b>C</b>)</label>
+<input type="number" class="form-control" id="temperature">
+</div>
+
+<div class="mb-3">
+<label class="form-label">Rainfall (in <b>cm</b>)</label>
+<input type="number" class="form-control" id="rainfall">
+</div>
+
+<div class="mb-3">
+<label class="form-label">Humidity (in <b>%</b>)</label>
+<input type="number" class="form-control" id="humidity">
+</div>
+
+<div class="mb-3">
+<label class="form-label">Soil Moisture (in <b>%</b>)</label>
+<input type="number" class="form-control" id="soil_moisture">
+</div>
+
+<div class="mb-3">
+<label class="form-label">Distance from Coast (in <b>km</b>)</label>
+<input type="number" class="form-control" id="distance_coast">
+</div>
+
+<div class="mb-3">
+<label class="form-label">Groundwater Depth (in <b>m</b>)</label>
+<input type="number" class="form-control" id="groundwater">
+</div>
+
+<div class="mb-3">
+<label class="form-label">Latitude</label>
+<input type="number" class="form-control" id="latitude">
+</div>
+
+<div class="mb-3">
+<label class="form-label">Longitude</label>
+<input type="number" class="form-control" id="longitude">
+</div>
+<div id="loading" class="text-center mt-3" style="display:none;">
+    <div class="spinner-border text-primary" role="status"></div>
+    <p class="mt-2">Analyzing soil conditions...Let AI do the Thinking...</p>
+</div>
+<button type="submit" class="btn btn-primary w-100">Predict Soil</button>
+
+</form>
+
+<div id="result" class="alert alert-success mt-3 text-center" style="display:none;"></div>
+</div>
+<script>
+
+document.getElementById("soilForm").addEventListener("submit", function(e){
+
+e.preventDefault();
+
+const resultBox = document.getElementById("result");
+const loading = document.getElementById("loading");
+
+resultBox.style.display = "none";
+loading.style.display = "block";
+
+fetch("/predict",{
+method:"POST",
+headers:{
+"Content-Type":"application/json"
+},
+body:JSON.stringify({
+
+temperature:document.getElementById("temperature").value,
+rainfall:document.getElementById("rainfall").value,
+humidity:document.getElementById("humidity").value,
+soil_moisture:document.getElementById("soil_moisture").value,
+distance_coast:document.getElementById("distance_coast").value,
+groundwater:document.getElementById("groundwater").value,
+latitude:document.getElementById("latitude").value,
+longitude:document.getElementById("longitude").value
+
+})
+})
+
+.then(res => res.json())
+
+.then(data => {
+
+loading.style.display = "none";
+resultBox.style.display = "block";
+
+if(data.error){
+resultBox.innerHTML = "<strong style='color:red'>" + data.error + "</strong>";
+return;
+}
+
+resultBox.innerHTML =
+"<strong>Predicted Soil Type:</strong> " + data.predicted_soil + "<br>" +
+"<strong>Landfill Suitability:</strong> " + data.landfill_suitability + "<br><br>" +
+"<strong>AI Explanation:</strong> " + data.explanation;
+
+})
+
+.catch(err => {
+
+loading.style.display = "none";
+
+resultBox.style.display = "block";
+resultBox.innerHTML = "Error getting prediction";
+
+});
+
+});
+
+</script>
+
+</body>
+</html>
